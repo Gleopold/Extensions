@@ -1,41 +1,38 @@
-// Sends the current YouTube URL to the native helper (yt-dlp) and shows
-// progress on the toolbar badge. The open port keeps this worker alive.
+// Runs downloads for the popup: sends the URL to the native helper (yt-dlp)
+// and tracks progress per URL. The open port keeps this worker alive.
 const HOST = 'com.lggpl.ytaudio';
-const YT = /^https:\/\/((www|m|music)\.)?youtube\.com\/(watch|shorts\/|live\/)|^https:\/\/youtu\.be\//;
-const active = new Set();
+const jobs = new Map(); // url -> { status: 'running' | 'done' | 'error', progress, file, error }
 
-chrome.action.onClicked.addListener(tab => {
-  const url = tab?.url || '';
-  if (!YT.test(url)) return badge('?', '#b35900', 'Open a YouTube video first');
-  if (active.has(url)) return;
-  active.add(url);
-
-  let finished = false;
-  const port = chrome.runtime.connectNative(HOST);
-  badge('...', '#555', `Starting: ${url}`);
-
-  port.onMessage.addListener(m => {
-    if (m.progress) badge(m.progress, '#1f6feb', `Downloading ${m.progress}`);
-    if (m.done) {
-      finished = true;
-      badge('OK', '#1a7f37', `Saved: ${m.file}`);
-    }
-    if (m.error) {
-      finished = true;
-      badge('ERR', '#cf222e', `Failed: ${m.error}`);
-    }
-  });
-
-  port.onDisconnect.addListener(() => {
-    active.delete(url);
-    if (!finished) badge('ERR', '#cf222e', `Helper failed: ${chrome.runtime.lastError?.message || 'disconnected'}`);
-  });
-
-  port.postMessage({ url });
+chrome.runtime.onMessage.addListener((msg, sender, reply) => {
+  if (msg.type === 'get') reply(jobs.get(msg.url) || null);
+  if (msg.type === 'download') {
+    start(msg.url);
+    reply(jobs.get(msg.url));
+  }
 });
 
-function badge(text, color, title) {
-  chrome.action.setBadgeText({ text });
-  chrome.action.setBadgeBackgroundColor({ color });
-  chrome.action.setTitle({ title: `YouTube Audio Download\n${title}` });
+function start(url) {
+  if (jobs.get(url)?.status === 'running') return;
+  update(url, { status: 'running', progress: '' });
+
+  const port = chrome.runtime.connectNative(HOST);
+  port.onMessage.addListener(m => {
+    if (m.progress) update(url, { status: 'running', progress: m.progress });
+    if (m.done) update(url, { status: 'done', file: m.file });
+    if (m.error) update(url, { status: 'error', error: m.error });
+  });
+  port.onDisconnect.addListener(() => {
+    if (jobs.get(url)?.status === 'running') {
+      update(url, { status: 'error', error: chrome.runtime.lastError?.message || 'helper disconnected' });
+    }
+  });
+  port.postMessage({ url });
+}
+
+function update(url, job) {
+  jobs.set(url, job);
+  const running = [...jobs.values()].filter(j => j.status === 'running');
+  chrome.action.setBadgeText({ text: running.length ? running[0].progress || '...' : '' });
+  chrome.action.setBadgeBackgroundColor({ color: '#1f6feb' });
+  chrome.runtime.sendMessage({ type: 'job', url, job }).catch(() => {}); // popup may be closed
 }
