@@ -1,11 +1,13 @@
 const YT = /^https:\/\/((www|m|music)\.)?youtube\.com\/(watch|shorts\/|live\/)|^https:\/\/youtu\.be\//;
 const $ = id => document.getElementById(id);
 let url = null;
+let savedFile = null;
 
 function render(job) {
   const running = job?.status === 'running';
+  savedFile = job?.status === 'done' ? job.file : null;
   $('download').disabled = !url || running;
-  $('download').textContent = running ? 'Downloading…' : job?.status === 'done' ? 'Download again' : 'Download audio';
+  $('download').textContent = running ? 'Downloading…' : savedFile ? 'Show in folder' : 'Download audio';
   $('bar').hidden = !running;
   if (running) {
     const pct = parseInt(job.progress, 10);
@@ -24,6 +26,10 @@ chrome.runtime.onMessage.addListener(msg => {
 });
 
 $('download').addEventListener('click', async () => {
+  if (savedFile) {
+    chrome.runtime.sendNativeMessage('com.lggpl.ytaudio', { open: savedFile });
+    return window.close();
+  }
   render(await chrome.runtime.sendMessage({ type: 'download', url }));
 });
 

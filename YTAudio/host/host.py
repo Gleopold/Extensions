@@ -30,8 +30,21 @@ def send(obj):
     sys.stdout.buffer.flush()
 
 
+def open_in_explorer(path):
+    """Show the file selected in Explorer, or the download folder if it's gone."""
+    if os.path.isfile(path):
+        subprocess.Popen(f'explorer /select,"{path}"')
+    else:
+        os.makedirs(OUT_DIR, exist_ok=True)
+        subprocess.Popen(['explorer', OUT_DIR])
+
+
 def main():
     msg = read_message() or {}
+    if msg.get('open'):
+        open_in_explorer(msg['open'])
+        send({'ok': True})
+        return
     url = msg.get('url')
     if not url:
         send({'error': 'no URL received'})
@@ -71,7 +84,7 @@ def main():
 
     if proc.returncode == 0 and file_path:
         send({'done': True, 'file': file_path})
-        subprocess.Popen(f'explorer /select,"{file_path}"')
+        open_in_explorer(file_path)
     else:
         send({'error': last_error or f'yt-dlp exited with code {proc.returncode}'})
 
