@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    :root { --bg: #fff; --fg: #1f2328; --muted: #59636e; --line: #d1d9e0; --hover: #f6f8fa; --fb: #0866ff; --ig: #d62976; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #1f2328; --fg: #e6edf3; --muted: #9198a1; --line: #3d444d; --hover: #262c36; }
+    }
+    body { width: 380px; margin: 0; font: 13px system-ui, sans-serif; background: var(--bg); color: var(--fg); }
+    header { position: sticky; top: 0; background: var(--bg); padding: 12px 12px 8px; border-bottom: 1px solid var(--line); }
+    h1 { font-size: 14px; margin: 0 0 8px; }
+    .controls { display: flex; gap: 6px; }
+    input, select { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); }
+    input { flex: 1; min-width: 0; }
+    ul { list-style: none; margin: 0; padding: 0; max-height: 480px; overflow-y: auto; }
+    li { display: flex; gap: 10px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--line); cursor: pointer; }
+    li:hover { background: var(--hover); }
+    .thumb { width: 56px; height: 56px; flex: none; border-radius: 6px; object-fit: cover; background: var(--line); }
+    .info { flex: 1; min-width: 0; }
+    .title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+    .meta { color: var(--muted); font-size: 12px; margin-top: 3px; }
+    .site { font-weight: 600; }
+    .site.facebook { color: var(--fb); }
+    .site.instagram { color: var(--ig); }
+    .del { border: 0; background: none; color: var(--muted); font-size: 16px; cursor: pointer; padding: 4px; }
+    .del:hover { color: #cf222e; }
+    .empty { padding: 24px 12px; color: var(--muted); text-align: center; }
+    footer { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; color: var(--muted); }
+    footer button { font: inherit; border: 1px solid var(--line); border-radius: 6px; background: none; color: var(--fg); padding: 4px 10px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Improved History</h1>
+    <div class="controls">
+      <input id="search" type="search" placeholder="Search captions or links" autofocus>
+      <select id="site">
+        <option value="">All</option>
+        <option value="facebook">Facebook</option>
+        <option value="instagram">Instagram</option>
+      </select>
+    </div>
+  </header>
+  <ul id="list"></ul>
+  <footer>
+    <span id="count"></span>
+    <button id="clear">Clear all</button>
+  </footer>
+  <script src="popup.js"></script>
+</body>
+</html>

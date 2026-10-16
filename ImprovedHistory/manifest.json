@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Improved History",
+  "version": "1.0.0",
+  "description": "Remembers Facebook and Instagram videos you've seen so you can get back to them after scrolling away.",
+  "permissions": ["storage"],
+  "content_scripts": [
+    {
+      "matches": ["https://*.facebook.com/*", "https://*.instagram.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": { "default_title": "Improved History", "default_popup": "popup.html" }
+}
