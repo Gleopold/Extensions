@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Fit Video Width",
+  "version": "1.1.0",
+  "description": "Scales the currently playing video to the full width of the browser window.",
+  "permissions": ["activeTab", "scripting"],
+  "host_permissions": ["<all_urls>"],
+  "background": { "service_worker": "background.js" },
+  "action": { "default_title": "Fit video to window width (Alt+Shift+F)" },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": { "default": "Alt+Shift+F" },
+      "description": "Toggle fit-to-width"
+    }
+  }
+}

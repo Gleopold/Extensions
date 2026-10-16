@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube Audio Download",
+  "version": "1.0.0",
+  "description": "Downloads the best-quality audio of the current YouTube video using yt-dlp.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtaXfmgirpdBQNiklVeqgncoxVwmOYSJjDJkSajTY4DwZ0QRPmcPej5DJ1NF4wJ/lB4egOTebVzSywSCCrVWRSv5zzlNeH2Cr+EcnyjMfEPudLmUaf+gVaXHUIEUa0pzSzjHxVzPHvCVrNubXjzCbHsY3clq3oyEnupcrKrOmRzJaPa/CmGOth/s9gw+XXtCPFeC2eaPPhXZFiaIFOhKmj78cuVq1bOzPU1o8pn0rEgsInMXpnVz05J910GZq0WtOoLHEs6HWG7pF2aSJdKHcY0ToiugCt7AYJawpI0wVS1Oby04BHgFLgKxUMhZWWNRtubDaU8764vwv4Bb0H8ERQQIDAQAB",
+  "permissions": [
+    "activeTab",
+    "nativeMessaging"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Download best-quality audio (Alt+Shift+A)"
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Alt+Shift+A"
+      },
+      "description": "Download audio of this video"
+    }
+  }
+}
