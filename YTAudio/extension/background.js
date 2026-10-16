@@ -6,12 +6,12 @@ const jobs = new Map(); // url -> { status: 'running' | 'done' | 'error', progre
 chrome.runtime.onMessage.addListener((msg, sender, reply) => {
   if (msg.type === 'get') reply(jobs.get(msg.url) || null);
   if (msg.type === 'download') {
-    start(msg.url);
+    start(msg.url, msg.format);
     reply(jobs.get(msg.url));
   }
 });
 
-function start(url) {
+function start(url, format) {
   if (jobs.get(url)?.status === 'running') return;
   update(url, { status: 'running', progress: '' });
 
@@ -26,7 +26,7 @@ function start(url) {
       update(url, { status: 'error', error: chrome.runtime.lastError?.message || 'helper disconnected' });
     }
   });
-  port.postMessage({ url });
+  port.postMessage({ url, format });
 }
 
 function update(url, job) {

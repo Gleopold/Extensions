@@ -6,6 +6,8 @@
     body { width: 300px; margin: 0; padding: 14px; font: 13px system-ui, sans-serif; background: #fff; color: #1f2328; }
     h1 { font-size: 14px; margin: 0 0 10px; }
     #title { margin: 0 0 12px; color: #59636e; overflow-wrap: anywhere; }
+    label { display: block; margin-bottom: 4px; font-weight: 600; }
+    select { width: 100%; margin-bottom: 10px; padding: 6px; font: inherit; border-radius: 6px; }
     button { width: 100%; padding: 9px; border: 0; border-radius: 6px; background: #cf222e; color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
     button:disabled { background: #8c959f; cursor: default; }
     progress { width: 100%; margin-top: 10px; }
@@ -22,6 +24,11 @@
 <body>
   <h1>YouTube Audio Download</h1>
   <p id="title">Loading…</p>
+  <label for="format">Format</label>
+  <select id="format">
+    <option value="wav">WAV 24-bit (for mixing)</option>
+    <option value="original">Original (Opus, smallest)</option>
+  </select>
   <button id="download" disabled>Download audio</button>
   <progress id="bar" max="100" hidden></progress>
   <p id="status"></p>

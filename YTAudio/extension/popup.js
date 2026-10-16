@@ -30,7 +30,13 @@ $('download').addEventListener('click', async () => {
     chrome.runtime.sendNativeMessage('com.lggpl.ytaudio', { open: savedFile });
     return window.close();
   }
-  render(await chrome.runtime.sendMessage({ type: 'download', url }));
+  render(await chrome.runtime.sendMessage({ type: 'download', url, format: $('format').value }));
+});
+
+// Remember the chosen format between popups.
+try { $('format').value = localStorage.getItem('format') || 'wav'; } catch {}
+$('format').addEventListener('change', () => {
+  try { localStorage.setItem('format', $('format').value); } catch {}
 });
 
 (async () => {

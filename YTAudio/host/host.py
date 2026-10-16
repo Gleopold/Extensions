@@ -51,12 +51,19 @@ def main():
         return
     os.makedirs(OUT_DIR, exist_ok=True)
 
+    if msg.get('format') == 'wav':
+        # Decode to 24-bit PCM at the source sample rate, for DAWs. WAV can't hold a thumbnail.
+        audio = ['--audio-format', 'wav', '--postprocessor-args', 'ExtractAudio:-c:a pcm_s24le']
+    else:
+        # Keep the original stream (usually Opus) without re-encoding.
+        audio = ['--embed-thumbnail']
+
     cmd = [
         YTDLP, url,
         '--no-playlist',
         '-f', 'bestaudio',
-        '-x',  # extract audio without re-encoding (keeps original quality)
-        '--embed-metadata', '--embed-thumbnail',
+        '-x', *audio,
+        '--embed-metadata',
         '--js-runtimes', f'deno:{DENO}',
         '--ffmpeg-location', LINKS,
         '-o', os.path.join(OUT_DIR, '%(title)s [%(id)s].%(ext)s'),
