@@ -12,7 +12,9 @@ $manifestPath = Join-Path $PSScriptRoot "$name.json"
     allowed_origins = @("chrome-extension://$extId/")
 } | ConvertTo-Json | Set-Content -Path $manifestPath -Encoding ascii
 
-$key = "HKCU:\Software\Google\Chrome\NativeMessagingHosts\$name"
-New-Item -Path $key -Force | Out-Null
-Set-ItemProperty -Path $key -Name '(default)' -Value $manifestPath
-"Registered $name -> $manifestPath"
+foreach ($browser in 'Google\Chrome', 'BraveSoftware\Brave-Browser') {
+    $key = "HKCU:\Software\$browser\NativeMessagingHosts\$name"
+    New-Item -Path $key -Force | Out-Null
+    Set-ItemProperty -Path $key -Name '(default)' -Value $manifestPath
+    "Registered $name for $browser -> $manifestPath"
+}
