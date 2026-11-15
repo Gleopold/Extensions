@@ -6,7 +6,9 @@ function render(job) {
   const running = job?.status === 'running';
   savedFile = job?.status === 'done' ? job.file : null;
   $('download').disabled = !url || running;
-  $('download').textContent = running ? 'Downloading…' : savedFile ? 'Show in folder' : 'Download';
+  $('download').textContent = running ? 'Downloading…' : savedFile ? 'Download again' : 'Download';
+  $('download').classList.toggle('secondary', !!savedFile); // "Open folder" becomes the main button
+  $('open').hidden = !savedFile;
   $('cancel').hidden = !running;
   $('cancel').disabled = !!job?.cancelling;
   $('format').disabled = $('quality').disabled = running;
@@ -39,11 +41,13 @@ chrome.runtime.onMessage.addListener(msg => {
   if (msg.type === 'job' && msg.url === url) render(msg.job);
 });
 
+// Opens the download folder in Explorer with the saved file selected.
+$('open').addEventListener('click', () => {
+  chrome.runtime.sendMessage({ type: 'open', file: savedFile });
+  window.close();
+});
+
 $('download').addEventListener('click', async () => {
-  if (savedFile) {
-    chrome.runtime.sendMessage({ type: 'open', file: savedFile });
-    return window.close();
-  }
   render(await chrome.runtime.sendMessage({ type: 'download', url, format: $('format').value, quality: $('quality').value }));
 });
 
@@ -62,8 +66,7 @@ $('update').addEventListener('click', async () => {
   $('status').textContent = result?.ok ? `${result.message} Try the download again.` : `Update failed: ${result?.message}`;
 });
 
-// Remember the chosen format between popups. Picking another format after a
-// finished download offers a fresh download instead of "Show in folder".
+// Remember the chosen format and quality between popups.
 const VIDEO = ['mp4', 'mkv', 'webm'];
 for (const [id, fallback] of [['format', 'mp4'], ['quality', 'best']]) {
   try { $(id).value = localStorage.getItem(id) || fallback; } catch {}
@@ -71,7 +74,6 @@ for (const [id, fallback] of [['format', 'mp4'], ['quality', 'best']]) {
   $(id).addEventListener('change', () => {
     try { localStorage.setItem(id, $(id).value); } catch {}
     $('qualityRow').hidden = !VIDEO.includes($('format').value);
-    if (savedFile) render(null);
   });
 }
 $('qualityRow').hidden = !VIDEO.includes($('format').value);

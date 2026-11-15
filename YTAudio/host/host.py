@@ -125,6 +125,10 @@ def build_command(url, fmt, quality, temp_dir):
     return [
         YTDLP, url,
         '--no-playlist',
+        '--force-overwrites',  # "Download again" replaces the earlier file instead of skipping
+        # Many sites throttle one long connection to ~1 MB/s after a short burst.
+        # Asking for the file in 10 MB pieces avoids that (measured about 9x faster).
+        '--http-chunk-size', '10M',
         *selection,
         '--embed-metadata',
         '--no-mtime',  # file date = download date, so it sorts to the top of the folder
@@ -173,7 +177,7 @@ def download(url, fmt, quality):
         proc = current['proc'] = subprocess.Popen(
             command, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
             creationflags=CREATE_NO_WINDOW, encoding='utf-8', errors='replace')
-        file_path, last_error, last_sent = None, None, None
+        file_path, last_error, last_sent, last_time = None, None, None, 0.0
         for line in proc.stdout:
             line = line.strip()
             if line.startswith('PROGRESS|'):
@@ -187,9 +191,12 @@ def download(url, fmt, quality):
                     speed = ''
                 if 'Unknown' in eta or eta == 'NA':
                     eta = ''
+                # Send on every new percent, and at least once a second so speed and time left
+                # stay live on slow downloads instead of looking frozen.
                 key = (m.group(1), part)
-                if key != last_sent:  # at most one message per percent
-                    last_sent = key
+                now = time.monotonic()
+                if key != last_sent or now - last_time >= 1:
+                    last_sent, last_time = key, now
                     send({'progress': m.group(1), 'speed': speed, 'eta': eta, 'part': part})
             elif line.startswith('POST|'):
                 _, name, status = (line.split('|') + [''] * 3)[:3]
