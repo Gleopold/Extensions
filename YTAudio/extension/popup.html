@@ -3,35 +3,66 @@
 <head>
   <meta charset="utf-8">
   <style>
-    body { width: 300px; margin: 0; padding: 14px; font: 13px system-ui, sans-serif; background: #fff; color: #1f2328; }
+    body { width: 320px; margin: 0; padding: 14px; font: 13px system-ui, sans-serif; background: #fff; color: #1f2328; }
     h1 { font-size: 14px; margin: 0 0 10px; }
     #title { margin: 0 0 12px; color: #59636e; overflow-wrap: anywhere; }
     label { display: block; margin-bottom: 4px; font-weight: 600; }
     select { width: 100%; margin-bottom: 10px; padding: 6px; font: inherit; border-radius: 6px; }
-    button { width: 100%; padding: 9px; border: 0; border-radius: 6px; background: #cf222e; color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+    .row { display: flex; gap: 8px; }
+    button { flex: 1; padding: 9px; border: 0; border-radius: 6px; background: #cf222e; color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
     button:disabled { background: #8c959f; cursor: default; }
+    button.secondary { flex: 0 0 auto; background: transparent; color: inherit; border: 1px solid #8c959f; }
     progress { width: 100%; margin-top: 10px; }
     #status { margin: 8px 0 0; overflow-wrap: anywhere; }
+    #update { margin-top: 8px; width: 100%; }
     .error { color: #cf222e; }
     .done { color: #1a7f37; }
     [hidden] { display: none !important; }
     @media (prefers-color-scheme: dark) {
       body { background: #1f2328; color: #e6edf3; }
       #title { color: #9198a1; }
+      .error { color: #ff7b72; }
+      .done { color: #3fb950; }
     }
   </style>
 </head>
 <body>
-  <h1>YouTube Audio Download</h1>
+  <h1>Video &amp; Audio Download</h1>
   <p id="title">Loading…</p>
   <label for="format">Format</label>
   <select id="format">
-    <option value="wav">WAV 24-bit (for mixing)</option>
-    <option value="original">Original (Opus, smallest)</option>
+    <optgroup label="Video">
+      <option value="mp4">MP4 (plays everywhere)</option>
+      <option value="mkv">MKV (original streams, any codec)</option>
+      <option value="webm">WebM (VP9/AV1 + Opus)</option>
+    </optgroup>
+    <optgroup label="Audio only">
+      <option value="mp3">MP3</option>
+      <option value="m4a">M4A (AAC)</option>
+      <option value="flac">FLAC</option>
+      <option value="wav">WAV 24-bit (for mixing)</option>
+      <option value="original">Original (Opus, smallest)</option>
+    </optgroup>
   </select>
-  <button id="download" disabled>Download audio</button>
+  <div id="qualityRow">
+    <label for="quality">Quality</label>
+    <select id="quality">
+      <option value="best">Best available</option>
+      <option value="2160">4K (2160p)</option>
+      <option value="1440">1440p</option>
+      <option value="1080">1080p</option>
+      <option value="720">720p</option>
+      <option value="480">480p</option>
+      <option value="360">360p (smallest)</option>
+    </select>
+  </div>
+  <div class="row">
+    <button id="download" disabled>Download</button>
+    <button id="cancel" class="secondary" hidden>Cancel</button>
+  </div>
   <progress id="bar" max="100" hidden></progress>
   <p id="status"></p>
+  <button id="update" class="secondary" hidden>Update yt-dlp (fixes most failures)</button>
   <script src="popup.js"></script>
 </body>
 </html>

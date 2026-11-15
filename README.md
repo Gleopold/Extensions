@@ -6,13 +6,20 @@ Personal Chrome extensions (Manifest V3), loaded unpacked via `chrome://extensio
 
 Scales the currently playing video to the full width of the browser window. Toggle with the toolbar icon or **Alt+Shift+F**; **Esc** exits. Works with videos inside iframes and shadow DOM.
 
-## YTAudio
+## YTAudio (Video & Audio Download)
 
-Toolbar menu (**Alt+Shift+A**) with a "Download audio" button that sends the current YouTube URL to a local native-messaging host, which runs [yt-dlp](https://github.com/yt-dlp/yt-dlp) to save the best audio stream (as 24-bit WAV for mixing, or the original Opus) to `~/Music/YouTube Audio`.
+Toolbar menu (**Alt+Shift+A**) that downloads the video or audio of the current page. It sends the page URL to a local native-messaging host, which runs [yt-dlp](https://github.com/yt-dlp/yt-dlp), so it works on YouTube and most other sites yt-dlp supports.
 
-Works in Chrome and Brave. Setup: install yt-dlp (`winget install yt-dlp.yt-dlp`), load `YTAudio/extension`, then run `YTAudio/host/install.ps1` to register the host. `host.bat` hardcodes the Python path; adjust it for your machine.
+- **Video:** MP4, MKV or WebM, at best available quality or capped at 4K, 1440p, 1080p, 720p, 480p or 360p. Saved to `~/Videos/Video Downloads`.
+- **Audio only:** MP3, M4A, FLAC, 24-bit WAV (for mixing) or the original Opus stream. Saved to `~/Music/YouTube Audio`.
+- Progress with speed and time left, a Cancel button (no partial files left behind), and "Show in folder" when done.
+- YouTube sometimes answers HTTP 403 partway through a stream; the host retries and resumes automatically. If downloads keep failing, the popup offers an "Update yt-dlp" button, which fixes most breakage.
 
-**Status:** not working as of 2026-10. YouTube now returns HTTP 403 for downloads without proof-of-origin (PO) tokens, so yt-dlp can't fetch the audio stream.
+Works in Chrome and Brave on Windows. Setup:
+
+1. Install the tools: `winget install yt-dlp.yt-dlp Gyan.FFmpeg DenoLand.Deno Python.Python.3.13` (Python must be on `PATH`).
+2. Load `YTAudio/extension` as an unpacked extension.
+3. Run `YTAudio/host/install.ps1` to register the host. Re-run it if you move the folder.
 
 ## ImprovedHistory
 

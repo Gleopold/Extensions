@@ -1,2 +1,3 @@
 @echo off
-"C:\Users\lggpl\AppData\Local\Programs\Python\Python313\python.exe" -u "%~dp0host.py" %*
+rem Needs Python 3 on PATH (python.org installer with "Add python.exe to PATH").
+python -u "%~dp0host.py" %*
