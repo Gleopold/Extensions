@@ -7,7 +7,7 @@ const ports = new Map(); // url -> native port of the running download
 chrome.runtime.onMessage.addListener((msg, sender, reply) => {
   if (msg.type === 'get') reply(jobs.get(msg.url) || null);
   if (msg.type === 'download') {
-    start(msg.url, msg.format, msg.quality);
+    start(msg.url, msg.format, msg.quality, msg.withCookies);
     reply(jobs.get(msg.url));
   }
   if (msg.type === 'cancel') {
@@ -22,9 +22,37 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
   }
 });
 
-function start(url, format, quality) {
+// The browser's cookies for a page, in the Netscape format yt-dlp reads. Needs the
+// site permission the popup asks for when a download fails on a captcha or login.
+async function cookieFile(url) {
+  const list = await chrome.cookies.getAll({ url });
+  const lines = ['# Netscape HTTP Cookie File'];
+  for (const c of list) {
+    lines.push([
+      (c.httpOnly ? '#HttpOnly_' : '') + c.domain,
+      c.domain.startsWith('.') ? 'TRUE' : 'FALSE',
+      c.path,
+      c.secure ? 'TRUE' : 'FALSE',
+      c.session ? 0 : Math.floor(c.expirationDate || 0),
+      c.name,
+      c.value,
+    ].join('\t'));
+  }
+  return lines.join('\n') + '\n';
+}
+
+async function start(url, format, quality, withCookies) {
   if (jobs.get(url)?.status === 'running') return;
   update(url, { status: 'running' });
+
+  let cookies;
+  if (withCookies) {
+    try {
+      cookies = await cookieFile(url);
+    } catch (e) {
+      return update(url, { status: 'error', error: `Could not read this site's cookies: ${e.message}` });
+    }
+  }
 
   const port = chrome.runtime.connectNative(HOST);
   ports.set(url, port);
@@ -37,7 +65,7 @@ function start(url, format, quality) {
     if (m.progress) update(url, { status: 'running', cancelling, pct: Number(m.progress), speed: m.speed, eta: m.eta, part: m.part });
     if (m.stage) update(url, { status: 'running', cancelling, stage: m.stage });
     if (m.done) finish({ status: 'done', file: m.file });
-    if (m.error) finish({ status: 'error', error: m.error });
+    if (m.error) finish({ status: 'error', error: m.error, needsCookies: m.needsCookies });
     if (m.cancelled) finish({ status: 'cancelled' });
   });
   port.onDisconnect.addListener(() => {
@@ -46,7 +74,7 @@ function start(url, format, quality) {
     const cancelling = jobs.get(url)?.cancelling;
     finish(cancelling ? { status: 'cancelled' } : { status: 'error', error: message || 'helper disconnected' });
   });
-  port.postMessage({ url, format, quality });
+  port.postMessage({ url, format, quality, cookies });
 }
 
 function cancel(url) {

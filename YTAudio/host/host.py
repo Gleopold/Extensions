@@ -83,7 +83,7 @@ def update_ytdlp():
     send({'ok': result.returncode == 0, 'message': text})
 
 
-def build_command(url, fmt, quality, temp_dir):
+def build_command(url, fmt, quality, temp_dir, cookie_path=None):
     if fmt in VIDEO_FORMATS:
         out_dir = VIDEO_DIR
         height = quality if quality in HEIGHTS else None  # None = best available
@@ -125,6 +125,7 @@ def build_command(url, fmt, quality, temp_dir):
     return [
         YTDLP, url,
         '--no-playlist',
+        *(['--cookies', cookie_path] if cookie_path else []),
         '--force-overwrites',  # "Download again" replaces the earlier file instead of skipping
         # Many sites throttle one long connection to ~1 MB/s after a short burst.
         # Asking for the file in 10 MB pieces avoids that (measured about 9x faster).
@@ -146,10 +147,17 @@ def build_command(url, fmt, quality, temp_dir):
     ]
 
 
-def download(url, fmt, quality):
+def download(url, fmt, quality, cookies=None):
     is_video = fmt in VIDEO_FORMATS
     temp_dir = tempfile.mkdtemp(prefix='ytaudio-')
-    command = build_command(url, fmt, quality, temp_dir)
+    cookie_path = None
+    if cookies:
+        # The browser's session for this site (e.g. after solving a captcha). It lives in the
+        # temp folder only, which is deleted when the download ends.
+        cookie_path = os.path.join(temp_dir, 'cookies.txt')
+        with open(cookie_path, 'w', encoding='utf-8', newline='\n') as f:
+            f.write(cookies)
+    command = build_command(url, fmt, quality, temp_dir, cookie_path)
     cancelled = threading.Event()
     current = {}  # 'proc': the running yt-dlp
 
@@ -224,7 +232,11 @@ def download(url, fmt, quality):
     elif cancelled.is_set():
         send({'cancelled': True})
     else:
-        send({'error': last_error or f'yt-dlp exited with code {code}'})
+        error = last_error or f'yt-dlp exited with code {code}'
+        # Bot checks, captchas, rate limits and logins: the browser's own session can fix these.
+        needs_cookies = bool(re.search(
+            r'(?i)\bbots?\b|captcha|rate.?limit|\b429\b|too many requests|sign in|log ?in|--cookies|short video ID', error))
+        send({'error': error, 'needsCookies': needs_cookies and not cookies})
 
 
 def main():
@@ -235,7 +247,8 @@ def main():
     elif msg.get('update'):
         update_ytdlp()
     elif msg.get('url'):
-        download(msg['url'], msg.get('format') or 'mp4', str(msg.get('quality') or 'best'))
+        download(msg['url'], msg.get('format') or 'mp4', str(msg.get('quality') or 'best'),
+                 msg.get('cookies'))
     else:
         send({'error': 'no URL received'})
 

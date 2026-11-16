@@ -1,12 +1,17 @@
 {
   "manifest_version": 3,
   "name": "Video & Audio Download",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Downloads the video or audio of the current page (YouTube and most other sites) using yt-dlp.",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtaXfmgirpdBQNiklVeqgncoxVwmOYSJjDJkSajTY4DwZ0QRPmcPej5DJ1NF4wJ/lB4egOTebVzSywSCCrVWRSv5zzlNeH2Cr+EcnyjMfEPudLmUaf+gVaXHUIEUa0pzSzjHxVzPHvCVrNubXjzCbHsY3clq3oyEnupcrKrOmRzJaPa/CmGOth/s9gw+XXtCPFeC2eaPPhXZFiaIFOhKmj78cuVq1bOzPU1o8pn0rEgsInMXpnVz05J910GZq0WtOoLHEs6HWG7pF2aSJdKHcY0ToiugCt7AYJawpI0wVS1Oby04BHgFLgKxUMhZWWNRtubDaU8764vwv4Bb0H8ERQQIDAQAB",
   "permissions": [
     "activeTab",
+    "cookies",
     "nativeMessaging"
+  ],
+  "optional_host_permissions": [
+    "http://*/*",
+    "https://*/*"
   ],
   "background": {
     "service_worker": "background.js"

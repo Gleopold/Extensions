@@ -13,6 +13,7 @@ function render(job) {
   $('cancel').disabled = !!job?.cancelling;
   $('format').disabled = $('quality').disabled = running;
   $('update').hidden = job?.status !== 'error';
+  $('cookies').hidden = !(job?.status === 'error' && job.needsCookies);
   $('bar').hidden = !running;
   if (running) {
     job.pct == null || job.stage || job.cancelling ? $('bar').removeAttribute('value') : ($('bar').value = job.pct);
@@ -22,7 +23,8 @@ function render(job) {
   status.textContent =
     running ? runningText(job) :
     job?.status === 'done' ? `Saved: ${job.file}` :
-    job?.status === 'error' ? `Failed: ${job.error}` :
+    job?.status === 'error' ? `Failed: ${job.error}${job.needsCookies
+      ? '\n\nThe site may be asking for a captcha or login. Solve it on the page in this tab, then retry with your browser session.' : ''}` :
     job?.status === 'cancelled' ? 'Cancelled.' : '';
 }
 
@@ -49,6 +51,26 @@ $('open').addEventListener('click', () => {
 
 $('download').addEventListener('click', async () => {
   render(await chrome.runtime.sendMessage({ type: 'download', url, format: $('format').value, quality: $('quality').value }));
+});
+
+// Retry using this tab's cookies, so the captcha or login already done in the browser counts.
+// The site permission is asked once per site, only when this button is used.
+$('cookies').addEventListener('click', async () => {
+  const origins = [`${new URL(url).origin}/*`];
+  try {
+    if (!(await chrome.permissions.contains({ origins })) && !(await chrome.permissions.request({ origins }))) {
+      $('status').className = 'error';
+      $('status').textContent = "Failed: permission to use this site's cookies was not granted.";
+      return;
+    }
+  } catch (e) {
+    $('status').className = 'error';
+    $('status').textContent = `Failed: ${e.message}`;
+    return;
+  }
+  render(await chrome.runtime.sendMessage({
+    type: 'download', url, format: $('format').value, quality: $('quality').value, withCookies: true,
+  }));
 });
 
 $('cancel').addEventListener('click', async () => {

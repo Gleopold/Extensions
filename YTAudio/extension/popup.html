@@ -13,8 +13,8 @@
     button:disabled { background: #8c959f; cursor: default; }
     button.secondary { flex: 0 0 auto; background: transparent; color: inherit; border: 1px solid #8c959f; }
     progress { width: 100%; margin-top: 10px; }
-    #status { margin: 8px 0 0; overflow-wrap: anywhere; }
-    #update { margin-top: 8px; width: 100%; }
+    #status { margin: 8px 0 0; overflow-wrap: anywhere; white-space: pre-line; }
+    #update, #cookies { margin-top: 8px; width: 100%; }
     .error { color: #cf222e; }
     .done { color: #1a7f37; }
     [hidden] { display: none !important; }
@@ -63,6 +63,7 @@
   </div>
   <progress id="bar" max="100" hidden></progress>
   <p id="status"></p>
+  <button id="cookies" hidden>Retry with my browser session</button>
   <button id="update" class="secondary" hidden>Update yt-dlp (fixes most failures)</button>
   <script src="popup.js"></script>
 </body>

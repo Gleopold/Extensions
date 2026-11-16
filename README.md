@@ -13,6 +13,7 @@ Toolbar menu (**Alt+Shift+A**) that downloads the video or audio of the current 
 - **Video:** MP4, MKV or WebM, at best available quality or capped at 4K, 1440p, 1080p, 720p, 480p or 360p. Saved to `~/Videos/Video Downloads`.
 - **Audio only:** MP3, M4A, FLAC, 24-bit WAV (for mixing) or the original Opus stream. Saved to `~/Music/YouTube Audio`.
 - Progress with speed and time left, a Cancel button (no partial files left behind), and "Show in folder" when done.
+- Sites that show a captcha or login ("you appear to be a bot") fail with a hint; solve it on the page, then press **Retry with my browser session**. The extension asks once per site for permission to read that site's cookies and passes them to yt-dlp for that one download.
 - YouTube sometimes answers HTTP 403 partway through a stream; the host retries and resumes automatically. If downloads keep failing, the popup offers an "Update yt-dlp" button, which fixes most breakage.
 
 Works in Chrome and Brave on Windows. Setup:
