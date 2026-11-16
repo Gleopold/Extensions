@@ -6,8 +6,7 @@ function render(job) {
   const running = job?.status === 'running';
   savedFile = job?.status === 'done' ? job.file : null;
   $('download').disabled = !url || running;
-  $('download').textContent = running ? 'Downloading…' : savedFile ? 'Download again' : 'Download';
-  $('download').classList.toggle('secondary', !!savedFile); // "Open folder" becomes the main button
+  $('download').textContent = running ? 'Downloading…' : 'Download'; // always there, also after a finished download
   $('open').hidden = !savedFile;
   $('cancel').hidden = !running;
   $('cancel').disabled = !!job?.cancelling;
